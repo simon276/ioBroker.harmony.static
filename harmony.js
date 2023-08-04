@@ -196,6 +196,9 @@ async function connectToHub(hubHost) {
         initHub(hub, () => {
             adapter.log.info(`successfully initialized hub: ` + hubHost);
             adapter.log.debug(JSON.stringify(hub, null, 3));
+
+            const hubName = fixId(hub.friendlyName).replace(`.`, `_`);
+            connect(hubName, hub);
         });
     } catch (error) {
         adapter.log.error(`could not connect to hub: ` + hubHost);
