@@ -193,12 +193,12 @@ async function connectToHub(hubHost) {
         const harmonyClient = await getHarmonyClient(hubHost, options);
         if (harmonyClient) adapter.log.info(`successfully connected to hub: ` + hubHost);
         
-        initHub(harmonyClient, () => {
+        return initHub(harmonyClient, () => {
             adapter.log.info(`successfully initialized hub: ` + hubHost);
             // adapter.log.debug(JSON.stringify(hub, null, 3));
 
             // const hubName = fixId(harmonyClient.friendlyName).replace(`.`, `_`);
-            connect(hubHost, harmonyClient);
+            return connect(hubHost, harmonyClient);
         });
     } catch (error) {
         adapter.log.error(`could not connect to hub: ` + hubHost);
@@ -326,7 +326,17 @@ function clientStop(hub) {
 }
 
 function connect(hubName, client) {
-    if (!hubs[hubName] || hubs[hubName].client !== null) return;
+    if (!hubs[hubName] ) {
+        adapter.log.error(`could not connect to hub: ${hubName}`);    
+        adapter.log.error(`hubs[hubName] is empty`) 
+        return;
+    }
+
+    if (hubs[hubName].client !== null) {
+        adapter.log.error(`could not connect to hub: ${hubName}`);    
+        adapter.log.error(`hubs[hubName].client is already present`)
+        return;
+    }
 
     // const client = new HarmonyWS(hubObj.ip);
     hubs[hubName].client = client;
