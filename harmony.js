@@ -330,6 +330,7 @@ function connect(hubName, client) {
 
     // const client = new HarmonyWS(hubObj.ip);
     hubs[hubName].client = client;
+    adapter.log.info(`successfully added client to hubs list: ${hubName}`);
 
     client.on(`online`, () => {
         setBlocked(hubName, true);
@@ -357,6 +358,8 @@ function connect(hubName, client) {
     client.on(`state`, (activityId, activityStatus) => {
         processDigest(hubName, activityId, activityStatus);
     });
+
+    adapter.log.info(`successfully bound events for hub: ` + hubName);
 }
 
 function processConfig(hub, config) {
