@@ -190,15 +190,15 @@ function main() {
 async function connectToHub(hubHost) {
     try {
         const options = undefined;
-        const hub = await getHarmonyClient(hubHost, options);
-        if (hub) adapter.log.info(`successfully connected to hub: ` + hubHost);
+        const harmonyClient = await getHarmonyClient(hubHost, options);
+        if (harmonyClient) adapter.log.info(`successfully connected to hub: ` + hubHost);
         
-        initHub(hub, () => {
+        initHub(harmonyClient, () => {
             adapter.log.info(`successfully initialized hub: ` + hubHost);
             // adapter.log.debug(JSON.stringify(hub, null, 3));
 
-            const hubName = fixId(hub.friendlyName).replace(`.`, `_`);
-            connect(hubName, hub);
+            const hubName = fixId(harmonyClient.friendlyName).replace(`.`, `_`);
+            connect(hubName, harmonyClient);
         });
     } catch (error) {
         adapter.log.error(`could not connect to hub: ` + hubHost);
@@ -325,41 +325,41 @@ function clientStop(hub) {
     }
 }
 
-function connect(hub, hubObj) {
-    if (!hubs[hub] || hubs[hub].client !== null) return;
+function connect(hubName, client) {
+    if (!hubs[hubName] || hubs[hubName].client !== null) return;
 
-    const client = new HarmonyWS(hubObj.ip);
-    hubs[hub].client = client;
+    // const client = new HarmonyWS(hubObj.ip);
+    hubs[hubName].client = client;
 
     client.on(`online`, () => {
-        setBlocked(hub, true);
-        setConnected(hub, true);
-        adapter.log.info(`[CONNECT] Connected to ${hubObj.friendlyName} (${hubObj.ip})`);
-        hubs[hub].client.requestConfig();
+        setBlocked(hubName, true);
+        setConnected(hubName, true);
+        adapter.log.info(`[CONNECT] Connected to ${hubName}`);
+        hubs[hubName].client.requestConfig();
     });
 
     client.on(`offline`, () => {
-        if (hubs[hub].connected)
-            adapter.log.info(`[CONNECT] lost Connection to ${hubObj.friendlyName} (${hubObj.ip})`);
-        setConnected(hub, false);
-        setBlocked(hub, false);
+        if (hubs[hubName].connected)
+            adapter.log.info(`[CONNECT] lost Connection to ${hubName}`);
+        setConnected(hubName, false);
+        setBlocked(hubName, false);
     });
 
     client.on(`config`, (config) => {
         try {
-            processConfig(hub, hubObj, config);
-            hubs[hub].client.requestState();
+            processConfig(hubName, config);
+            hubs[hubName].client.requestState();
         } catch (e) {
             adapter.log.error(e);
         }
     });
 
     client.on(`state`, (activityId, activityStatus) => {
-        processDigest(hub, activityId, activityStatus);
+        processDigest(hubName, activityId, activityStatus);
     });
 }
 
-function processConfig(hub, hubObj, config) {
+function processConfig(hub, config) {
     if (hubs[hub].isSync) {
         setBlocked(hub, false);
         setConnected(hub, true);
@@ -374,7 +374,7 @@ function processConfig(hub, hubObj, config) {
         common: {
             name: hub
         },
-        native: hubObj
+        native: 'removed'
     });
 
     if (!hubs[hub].statesExist) {
