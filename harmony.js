@@ -343,6 +343,7 @@ function connect(hubName, client) {
     adapter.log.info(`successfully added client to hubs list: ${hubName}`);
 
     client.on(`online`, () => {
+        adapter.log.debug(`received online event from hub: ${hubName}`);
         setBlocked(hubName, true);
         setConnected(hubName, true);
         adapter.log.info(`[CONNECT] Connected to ${hubName}`);
@@ -350,6 +351,7 @@ function connect(hubName, client) {
     });
 
     client.on(`offline`, () => {
+        adapter.log.debug(`received offline event from hub: ${hubName}`);
         if (hubs[hubName].connected)
             adapter.log.info(`[CONNECT] lost Connection to ${hubName}`);
         setConnected(hubName, false);
@@ -357,6 +359,7 @@ function connect(hubName, client) {
     });
 
     client.on(`config`, (config) => {
+        adapter.log.debug(`received config event from hub: ${hubName}`);
         try {
             processConfig(hubName, config);
             hubs[hubName].client.requestState();
@@ -366,6 +369,7 @@ function connect(hubName, client) {
     });
 
     client.on(`state`, (activityId, activityStatus) => {
+        adapter.log.debug(`received state event from hub: ${hubName}`);
         processDigest(hubName, activityId, activityStatus);
     });
 
