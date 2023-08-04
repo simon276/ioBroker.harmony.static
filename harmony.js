@@ -190,15 +190,15 @@ function main() {
 async function connectToHub(hubHost) {
     try {
         const options = undefined;
-        const harmonyClient = await getHarmonyClient(hubHost, options);
-        if (harmonyClient) adapter.log.info(`successfully connected to hub: ` + hubHost);
+        // const harmonyClient = await getHarmonyClient(hubHost, options);
+        // if (harmonyClient) adapter.log.info(`successfully connected to hub: ` + hubHost);
         
         return initHub(hubHost, () => {
             adapter.log.info(`successfully initialized hub: ` + hubHost);
             // adapter.log.debug(JSON.stringify(hub, null, 3));
 
             // const hubName = fixId(harmonyClient.friendlyName).replace(`.`, `_`);
-            return connect(hubHost, harmonyClient);
+            return connect(hubHost, hubHost);
         });
     } catch (error) {
         adapter.log.error(`could not connect to hub: ` + hubHost);
@@ -325,20 +325,20 @@ function clientStop(hub) {
     }
 }
 
-function connect(hubName, client) {
+function connect(hubName, ip) {
     if (!hubs[hubName] ) {
         adapter.log.error(`could not connect to hub: ${hubName}`);    
-        adapter.log.error(`hubs[hubName] is empty`) 
+        adapter.log.error(`hubs[hubName] is empty`); 
         return;
     }
 
     if (hubs[hubName].client !== null) {
         adapter.log.error(`could not connect to hub: ${hubName}`);    
-        adapter.log.error(`hubs[hubName].client is already present`)
+        adapter.log.error(`hubs[hubName].client is already present`);
         return;
     }
 
-    // const client = new HarmonyWS(hubObj.ip);
+    const client = new HarmonyWS(ip);
     hubs[hubName].client = client;
     adapter.log.info(`successfully added client to hubs list: ${hubName}`);
 
@@ -391,7 +391,7 @@ function processConfig(hub, config) {
         common: {
             name: hub
         },
-        native: 'removed'
+        native: `removed`
     });
 
     if (!hubs[hub].statesExist) {
