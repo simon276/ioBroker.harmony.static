@@ -181,8 +181,8 @@ function main() {
     discoverInterval = adapter.config.discoverInterval || 1000;
     adapter.subscribeStates(`*`);
 
-    adapter.log.info(`trying to connect to first manual hub: ` + manualDiscoverHubs[0]);
-    connectToHub(manualDiscoverHubs[0]);
+    adapter.log.info(`trying to connect to first manual hub: ` + manualDiscoverHubs[0].ip);
+    connectToHub(manualDiscoverHubs[0].ip);
     // adapter.log.debug(`[START] Subnet: ${subnet}, Discovery interval: ${discoverInterval}`);
     // discoverStart();
 }
