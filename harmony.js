@@ -9,6 +9,7 @@
 /*jslint node: true */
 'use strict';
 
+const { getHarmonyClient, HarmonyClient } = require(`@harmonyhub/client-ws`);
 const HarmonyHubDiscover = require(`@harmonyhub/discover`).Explorer;
 const utils = require(`@iobroker/adapter-core`);
 const HarmonyWS = require(`harmonyhubws`);
@@ -179,8 +180,26 @@ function main() {
     subnet = adapter.config.subnet || `255.255.255.255`;
     discoverInterval = adapter.config.discoverInterval || 1000;
     adapter.subscribeStates(`*`);
-    adapter.log.debug(`[START] Subnet: ${subnet}, Discovery interval: ${discoverInterval}`);
-    discoverStart();
+
+    adapter.log.info(`trying to connect to first manual hub: ` + manualDiscoverHubs[0]);
+    connectToHub(manualDiscoverHubs[0]);
+    // adapter.log.debug(`[START] Subnet: ${subnet}, Discovery interval: ${discoverInterval}`);
+    // discoverStart();
+}
+
+async function connectToHub(hubHost) {
+    try {
+        const options = undefined;
+        const hub = await getHarmonyClient(hubHost, options);
+        if (hub) adapter.log.info(`successfully connected to hub: ` + hubHost);
+        
+        initHub(hub, () => {
+            adapter.log.info(`successfully initialized hub: ` + hubHost);
+        });
+    } catch (error) {
+        adapter.log.error(`could not connect to hub: ` + hubHost);
+        adapter.log.error(error);
+    }
 }
 
 function discoverStart() {
