@@ -193,7 +193,7 @@ async function connectToHub(hubHost) {
         const harmonyClient = await getHarmonyClient(hubHost, options);
         if (harmonyClient) adapter.log.info(`successfully connected to hub: ` + hubHost);
         
-        return initHub(harmonyClient, () => {
+        return initHub(hubHost, () => {
             adapter.log.info(`successfully initialized hub: ` + hubHost);
             // adapter.log.debug(JSON.stringify(hub, null, 3));
 
@@ -254,8 +254,8 @@ async function connectToHub(hubHost) {
 //     });
 // } // endDiscoverStart
 
-function initHub(hub, callback) {
-    hubs[hub] = {
+function initHub(hubName, callback) {
+    hubs[hubName] = {
         client: null,
         connected: false,
         activities: {},
@@ -271,12 +271,12 @@ function initHub(hub, callback) {
         semaphore: require(`semaphore`)(1)
     };
 
-    adapter.getState(`${hub}.hubConnected`, (err, state) => {
+    adapter.getState(`${hubName}.hubConnected`, (err, state) => {
         if (err || !state) {
             adapter.log.debug(`hub not initialized`);
             callback();
         } else {
-            adapter.getChannelsOf(hub, (err, channels) => {
+            adapter.getChannelsOf(hubName, (err, channels) => {
                 if (err || !channels) {
                     adapter.log.debug(`hub not initialized correctly`);
                     callback();
@@ -285,16 +285,16 @@ function initHub(hub, callback) {
                 for (let i = 0; i < channels.length; i++) {
                     const channel = channels[i];
                     if (channel.common.name === `activities`) {
-                        hubs[hub].statesExist = true;
-                        setBlocked(hub, true);
-                        setConnected(hub, false);
-                        hubs[hub].hasActivities = true;
+                        hubs[hubName].statesExist = true;
+                        setBlocked(hubName, true);
+                        setConnected(hubName, false);
+                        hubs[hubName].hasActivities = true;
                         adapter.log.debug(`hub initialized`);
                         continue;
                     }
-                    hubs[hub].ioChannels[channel.common.name] = true;
+                    hubs[hubName].ioChannels[channel.common.name] = true;
                 }
-                adapter.getStates(`${hub}.activities.*`, (err, states) => {
+                adapter.getStates(`${hubName}.activities.*`, (err, states) => {
                     if (err || !states) {
                         adapter.log.debug(`no activities found`);
                         callback();
@@ -305,7 +305,7 @@ function initHub(hub, callback) {
                             const tmp = state.split(`.`);
                             const name = tmp.pop();
                             if (name !== `currentStatus` && name !== `currentActivity`) {
-                                hubs[hub].ioStates[name] = true;
+                                hubs[hubName].ioStates[name] = true;
                             }
                         }
                     }
